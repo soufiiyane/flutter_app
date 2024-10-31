@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'login_screen.dart';
+import 'profile_page.dart';
 import 'article_page.dart';
 import 'cart_page.dart';
+import 'login_screen.dart';
+
 
 void main() {
   runApp(const MyApp());
@@ -29,10 +31,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Shopping App',
       theme: ThemeData(
-        colorScheme: defaultColorScheme,
         primarySwatch: Colors.blue,
       ),
-      home: const BottomNavBar(),
+      home: const LoginPage(title: 'Login'), // Set LoginPage as home
     );
   }
 }
@@ -51,7 +52,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
   final List<Widget> _pages = [
     ArticlePage(), // Home Page
     CartPage(),    // Cart Page
-    LoginPage(title: 'Login UI'), // Profile Page (as an example)
+    ProfilePage(), // Profile Page
   ];
 
   void _onItemTapped(int index) {

@@ -1,7 +1,7 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:login_ui/register_screen.dart';
-import 'article_page.dart'; // Import ArticlePage
+import 'home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key, required this.title}) : super(key: key);
@@ -23,30 +23,31 @@ class _LoginPageState extends State<LoginPage> {
     {"email": "soufiyane@email.com", "password": "soufiyane"},
   ];
 
-  void _login() {
-    final email = _emailController.text;
-    final password = _passwordController.text;
+ void _login() {
+  final email = _emailController.text;
+  final password = _passwordController.text;
 
-    // Check if email and password exist in the list
-    final userExists = users.any((user) =>
-        user['email'] == email && user['password'] == password);
+  // Check if email and password exist in the list
+  final userExists = users.any((user) =>
+      user['email'] == email && user['password'] == password);
 
-    if (userExists) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login Successful')),
-      );
+  if (userExists) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Login Successful')),
+    );
 
-      // Navigate to ArticlePage on successful login
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => ArticlePage()),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid email or password')),
-      );
-    }
+    // Navigate to HomePage on successful login
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => HomePage()),
+    );
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Invalid email or password')),
+    );
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
