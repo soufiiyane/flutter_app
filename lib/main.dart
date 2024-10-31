@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'login_screen.dart';
 import 'article_page.dart';
 import 'cart_page.dart';
-import 'article_detail_page.dart';
 
 void main() {
   runApp(const MyApp());
