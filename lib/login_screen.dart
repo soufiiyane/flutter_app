@@ -4,6 +4,7 @@ import 'package:login_ui/register_screen.dart';
 import 'home_page.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert'; // For JSON encoding/decoding
+import 'session_manager.dart'; // Import your session manager
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key, required this.title}) : super(key: key);
@@ -20,56 +21,51 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
 
   void _login() async {
-    final email = _emailController.text;
-    final password = _passwordController.text;
+  final email = _emailController.text;
+  final password = _passwordController.text;
 
-    // Validate email and password
-    if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter both email and password')),
-      );
-      return;
-    }
-
-    final url = Uri.parse('https://g2izee01b8.execute-api.us-east-1.amazonaws.com/dev/login');
-
-    try {
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email, 'password': password}),
-      );
-
-      // If the server returns a 200 OK response, parse the response body
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> responseBody = jsonDecode(response.body);
-        final String body = responseBody['body'];
-
-        // Check if the response body contains the email
-        final emailInResponse = jsonDecode(body)['email'];
-        if (emailInResponse != null && emailInResponse == email) {
-          // Navigate to HomePage on successful login
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Login Successful')),
-          );
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => HomePage()),
-          );
-        } else {
-          // If the email does not match
-          _showInvalidLoginMessage();
-        }
-      } else {
-        // Handle non-200 responses
-        _showInvalidLoginMessage();
-      }
-    } catch (e) {
-      // Handle any exceptions by showing an invalid login message
-      _showInvalidLoginMessage();
-    }
+  if (email.isEmpty || password.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please enter both email and password')),
+    );
+    return;
   }
 
+  final url = Uri.parse('https://g2izee01b8.execute-api.us-east-1.amazonaws.com/dev/login');
+
+  try {
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email, 'password': password}),
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> responseBody = jsonDecode(response.body);
+      final String body = responseBody['body'];
+
+      final emailInResponse = jsonDecode(body)['email'];
+      if (emailInResponse != null && emailInResponse == email) {
+        // Set the user email globally on successful login
+        SessionManager().userEmail = email;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Login Successful')),
+        );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()),
+        );
+      } else {
+        _showInvalidLoginMessage();
+      }
+    } else {
+      _showInvalidLoginMessage();
+    }
+  } catch (e) {
+    _showInvalidLoginMessage();
+  }
+}
   // Function to show invalid login message
   void _showInvalidLoginMessage() {
     ScaffoldMessenger.of(context).showSnackBar(

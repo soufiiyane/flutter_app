@@ -26,7 +26,13 @@ class _CartPageState extends State<CartPage> {
                 return Card(
                   margin: const EdgeInsets.all(10),
                   child: ListTile(
-                    leading: Image.asset(item["image"], width: 50, height: 50),
+                    leading: Image.network(
+                      item["image"],
+                      width: 50,
+                      height: 50,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => const Icon(Icons.error),
+                    ),
                     title: Text(item["title"]),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

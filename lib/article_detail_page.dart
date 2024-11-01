@@ -73,11 +73,12 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
             Center(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(10),
-                child: Image.asset(
+                child: Image.network(
                   widget.image,
                   width: double.infinity,
                   height: 200,
                   fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.error),
                 ),
               ),
             ),
