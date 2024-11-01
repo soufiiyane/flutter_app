@@ -2,6 +2,8 @@ import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:login_ui/register_screen.dart';
 import 'home_page.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert'; // For JSON encoding/decoding
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key, required this.title}) : super(key: key);
@@ -17,37 +19,63 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  // Sample array of email and password combinations
-  final List<Map<String, String>> users = [
-    {"email": "soufiyane@gmail.com", "password": "soufiyane"},
-    {"email": "soufiyane@email.com", "password": "soufiyane"},
-  ];
+  void _login() async {
+    final email = _emailController.text;
+    final password = _passwordController.text;
 
- void _login() {
-  final email = _emailController.text;
-  final password = _passwordController.text;
+    // Validate email and password
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter both email and password')),
+      );
+      return;
+    }
 
-  // Check if email and password exist in the list
-  final userExists = users.any((user) =>
-      user['email'] == email && user['password'] == password);
+    final url = Uri.parse('https://g2izee01b8.execute-api.us-east-1.amazonaws.com/dev/login');
 
-  if (userExists) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Login Successful')),
-    );
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'password': password}),
+      );
 
-    // Navigate to HomePage on successful login
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => HomePage()),
-    );
-  } else {
+      // If the server returns a 200 OK response, parse the response body
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseBody = jsonDecode(response.body);
+        final String body = responseBody['body'];
+
+        // Check if the response body contains the email
+        final emailInResponse = jsonDecode(body)['email'];
+        if (emailInResponse != null && emailInResponse == email) {
+          // Navigate to HomePage on successful login
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Login Successful')),
+          );
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => HomePage()),
+          );
+        } else {
+          // If the email does not match
+          _showInvalidLoginMessage();
+        }
+      } else {
+        // Handle non-200 responses
+        _showInvalidLoginMessage();
+      }
+    } catch (e) {
+      // Handle any exceptions by showing an invalid login message
+      _showInvalidLoginMessage();
+    }
+  }
+
+  // Function to show invalid login message
+  void _showInvalidLoginMessage() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Invalid email or password')),
     );
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
