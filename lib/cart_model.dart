@@ -17,8 +17,11 @@ class CartModel {
   }
 
   void removeItem(int index) {
-    _cartItems.removeAt(index);
-  }
+    if (index >= 0 && index < _cartItems.length) {
+      _cartItems.removeAt(index);
+    }
+}
+
 
   void clearCart() {
     _cartItems.clear();

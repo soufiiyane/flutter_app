@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'cart_model.dart';
+import 'cart_page.dart';
 
-class ArticleDetailPage extends StatelessWidget {
+class ArticleDetailPage extends StatefulWidget {
   final String image;
   final String title;
   final String category;
@@ -19,17 +20,28 @@ class ArticleDetailPage extends StatelessWidget {
     required this.price,
   }) : super(key: key);
 
+  @override
+  _ArticleDetailPageState createState() => _ArticleDetailPageState();
+}
+
+class _ArticleDetailPageState extends State<ArticleDetailPage> {
+  bool _isInCart = false;
+
   void _addToCart(BuildContext context) {
     final newItem = {
-      "image": image,
-      "title": title,
-      "category": category,
-      "size": size,
-      "brand": brand,
-      "price": price,
+      "image": widget.image,
+      "title": widget.title,
+      "category": widget.category,
+      "size": widget.size,
+      "brand": widget.brand,
+      "price": widget.price,
     };
 
     CartModel().addItem(newItem);
+
+    setState(() {
+      _isInCart = true;
+    });
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Added to Cart!')),
@@ -40,12 +52,15 @@ class ArticleDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(title),
+        title: Text(widget.title),
         actions: [
           IconButton(
             icon: const Icon(Icons.shopping_cart),
             onPressed: () {
-              Navigator.pushNamed(context, '/cart');
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const CartPage()), // Navigate directly to CartPage
+              );
             },
           ),
         ],
@@ -59,7 +74,7 @@ class ArticleDetailPage extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: Image.asset(
-                  image,
+                  widget.image,
                   width: double.infinity,
                   height: 200,
                   fit: BoxFit.cover,
@@ -68,18 +83,18 @@ class ArticleDetailPage extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              title,
+              widget.title,
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 10),
-            Text("Catégorie: $category", style: const TextStyle(fontSize: 18)),
-            Text("Taille: $size", style: const TextStyle(fontSize: 18)),
-            Text("Marque: $brand", style: const TextStyle(fontSize: 18)),
+            Text("Catégorie: ${widget.category}", style: const TextStyle(fontSize: 18)),
+            Text("Taille: ${widget.size}", style: const TextStyle(fontSize: 18)),
+            Text("Marque: ${widget.brand}", style: const TextStyle(fontSize: 18)),
             Text(
-              "Prix: $price",
+              "Prix: ${widget.price}",
               style: const TextStyle(
                 fontSize: 18,
                 color: Colors.redAccent,
@@ -88,10 +103,15 @@ class ArticleDetailPage extends StatelessWidget {
             ),
             const Spacer(),
             Center(
-              child: ElevatedButton(
-                onPressed: () => _addToCart(context),
-                child: const Text("Add to Cart"),
-              ),
+              child: _isInCart
+                  ? const Text(
+                      'Item already in cart',
+                      style: TextStyle(fontSize: 16, color: Colors.green),
+                    )
+                  : ElevatedButton(
+                      onPressed: () => _addToCart(context),
+                      child: const Text("Add to Cart"),
+                    ),
             ),
           ],
         ),

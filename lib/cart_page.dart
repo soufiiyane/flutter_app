@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'cart_model.dart';
 
-class CartPage extends StatelessWidget {
+class CartPage extends StatefulWidget {
   const CartPage({Key? key}) : super(key: key);
 
+  @override
+  _CartPageState createState() => _CartPageState();
+}
+
+class _CartPageState extends State<CartPage> {
   @override
   Widget build(BuildContext context) {
     final cartItems = CartModel().cartItems;
@@ -38,8 +43,9 @@ class CartPage extends StatelessWidget {
                     trailing: IconButton(
                       icon: const Icon(Icons.remove_circle, color: Colors.red),
                       onPressed: () {
-                        CartModel().removeItem(index);
-                        (context as Element).markNeedsBuild();
+                        setState(() {
+                          CartModel().removeItem(index);
+                        });
                       },
                     ),
                   ),
@@ -50,11 +56,12 @@ class CartPage extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: ElevatedButton(
           onPressed: () {
-            CartModel().clearCart();
+            setState(() {
+              CartModel().clearCart();
+            });
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text("Cart cleared!")),
             );
-            (context as Element).markNeedsBuild();
           },
           child: const Text("Clear Cart"),
         ),
