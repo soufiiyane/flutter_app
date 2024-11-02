@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker_web/image_picker_web.dart';
-import 'package:http/http.dart' as http;
 import 'dart:typed_data'; // For handling image data
 import 'dart:convert'; // For JSON encoding
-import 'profile_page.dart';
+import 'package:http/http.dart' as http;
 
 class AddArticlePage extends StatefulWidget {
   const AddArticlePage({Key? key}) : super(key: key);
@@ -29,12 +28,14 @@ class _AddArticlePageState extends State<AddArticlePage> {
     if (imageData != null) {
       setState(() {
         _imageData = imageData;
+        _categoryController.clear(); // Clear any existing text
+        _categoryController.text = 'Pantalon'; // Set default category
       });
     }
   }
 
   void _submitArticle() async {
-    if (_formKey.currentState!.validate()) {
+    if (_formKey.currentState!.validate() && _imageData != null) {
       // Convert image data to Base64
       String base64Image = base64Encode(_imageData!);
 
@@ -48,35 +49,27 @@ class _AddArticlePageState extends State<AddArticlePage> {
         "image_data": base64Image,
       };
 
-      // Send the POST request
+      // Show success message immediately
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Article ajouté avec succès')),
+      );
+
+      // Send the POST request without waiting for the response
       try {
-        final response = await http.post(
+        await http.post(
           Uri.parse('https://g2izee01b8.execute-api.us-east-1.amazonaws.com/dev/articles'),
           headers: {
             'Content-Type': 'application/json',
           },
           body: jsonEncode(articleData),
         );
-
-        // Show a message based on the response
-        if (response.statusCode == 200) {
-          // Article submitted successfully
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Article submitted successfully')),
-          );
-        } else {
-          // Handle failure
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to submit article: ${response.body}')),
-          );
-        }
       } catch (error) {
         // Handle network errors or any exceptions
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error submitting article: $error')),
+          SnackBar(content: Text('Erreur lors de l\'ajout de l\'article: $error')),
         );
       }
-      
+
       // Clear the form after submission
       _brandController.clear();
       _categoryController.clear();
@@ -86,6 +79,11 @@ class _AddArticlePageState extends State<AddArticlePage> {
       setState(() {
         _imageData = null; // Reset image data
       });
+    } else if (_imageData == null) {
+      // Show error if no image is uploaded
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Veuillez télécharger une image')),
+      );
     }
   }
 
@@ -97,7 +95,7 @@ class _AddArticlePageState extends State<AddArticlePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add an Article'),
+        title: const Text('Ajouter un Article'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -108,19 +106,19 @@ class _AddArticlePageState extends State<AddArticlePage> {
             children: <Widget>[
               TextFormField(
                 controller: _brandController,
-                decoration: const InputDecoration(labelText: 'Brand'),
-                validator: (value) => value!.isEmpty ? 'Enter Brand' : null,
+                decoration: const InputDecoration(labelText: 'Marque'),
+                validator: (value) => value!.isEmpty ? 'Entrez une marque' : null,
               ),
               const SizedBox(height: 10),
               TextFormField(
                 controller: _categoryController,
-                decoration: const InputDecoration(labelText: 'Category'),
-                validator: (value) => value!.isEmpty ? 'Enter Category' : null,
+                decoration: const InputDecoration(labelText: 'Catégorie'),
+                validator: (value) => value!.isEmpty ? 'Entrez une catégorie' : null,
               ),
               const SizedBox(height: 10),
               ElevatedButton(
                 onPressed: _pickImage,
-                child: const Text('Upload Image'),
+                child: const Text('Télécharger une image'),
               ),
               if (_imageData != null)
                 Image.memory(
@@ -132,31 +130,31 @@ class _AddArticlePageState extends State<AddArticlePage> {
               const SizedBox(height: 10),
               TextFormField(
                 controller: _priceController,
-                decoration: const InputDecoration(labelText: 'Price'),
+                decoration: const InputDecoration(labelText: 'Prix'),
                 keyboardType: TextInputType.number,
-                validator: (value) => value!.isEmpty ? 'Enter Price' : null,
+                validator: (value) => value!.isEmpty ? 'Entrez un prix' : null,
               ),
               const SizedBox(height: 10),
               TextFormField(
                 controller: _sizeController,
-                decoration: const InputDecoration(labelText: 'Size'),
-                validator: (value) => value!.isEmpty ? 'Enter Size' : null,
+                decoration: const InputDecoration(labelText: 'Taille'),
+                validator: (value) => value!.isEmpty ? 'Entrez une taille' : null,
               ),
               const SizedBox(height: 10),
               TextFormField(
                 controller: _titleController,
-                decoration: const InputDecoration(labelText: 'Title'),
-                validator: (value) => value!.isEmpty ? 'Enter Title' : null,
+                decoration: const InputDecoration(labelText: 'Titre'),
+                validator: (value) => value!.isEmpty ? 'Entrez un titre' : null,
               ),
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _submitArticle,
-                child: const Text('Submit'),
+                child: const Text('Valider'),
               ),
               const SizedBox(height: 10),
               ElevatedButton(
                 onPressed: _returnToProfile,
-                child: const Text('Return to Profile'),
+                child: const Text('Retourner au profil'),
               ),
             ],
           ),

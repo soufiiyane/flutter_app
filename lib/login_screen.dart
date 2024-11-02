@@ -24,7 +24,7 @@ class _LoginPageState extends State<LoginPage> {
 
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter both email and password')),
+        const SnackBar(content: Text('Veuillez entrer votre email et votre mot de passe')),
       );
       return;
     }
@@ -48,7 +48,7 @@ class _LoginPageState extends State<LoginPage> {
           SessionManager().userEmail = email;
 
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Login Successful')),
+            const SnackBar(content: Text('Connexion réussie')),
           );
           Navigator.pushReplacement(
             context,
@@ -68,13 +68,17 @@ class _LoginPageState extends State<LoginPage> {
   // Function to show invalid login message
   void _showInvalidLoginMessage() {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Invalid email or password')),
+      const SnackBar(content: Text('Email ou mot de passe invalide')),
     );
+    print('Tentative de connexion invalide'); // Log the invalid attempt
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Tenshiy application'), // Add your application name here
+      ),
       backgroundColor: Theme.of(context).colorScheme.background,
       body: Container(
         padding: const EdgeInsets.all(20),
@@ -83,7 +87,7 @@ class _LoginPageState extends State<LoginPage> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             const Text(
-              'Sign in',
+              'Se connecter',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 40,
@@ -100,10 +104,10 @@ class _LoginPageState extends State<LoginPage> {
                     controller: _emailController,
                     validator: (value) => EmailValidator.validate(value!)
                         ? null
-                        : "Please enter a valid email",
+                        : "Veuillez entrer un email valide",
                     maxLines: 1,
                     decoration: InputDecoration(
-                      hintText: 'Enter your email',
+                      hintText: 'Entrez votre email',
                       prefixIcon: const Icon(Icons.email),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -117,7 +121,7 @@ class _LoginPageState extends State<LoginPage> {
                     controller: _passwordController,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your password';
+                        return 'Veuillez entrer votre mot de passe';
                       }
                       return null;
                     },
@@ -125,7 +129,7 @@ class _LoginPageState extends State<LoginPage> {
                     obscureText: true,
                     decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.lock),
-                      hintText: 'Enter your password',
+                      hintText: 'Entrez votre mot de passe',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -138,13 +142,16 @@ class _LoginPageState extends State<LoginPage> {
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         _login();
+                      } else {
+                        // Optionally log the error for validation failure
+                        print('Validation échouée : champs vides');
                       }
                     },
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.fromLTRB(40, 15, 40, 15),
                     ),
                     child: const Text(
-                      'Sign in',
+                      'Se connecter', // Keep button text in French
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -152,7 +159,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ],
               ),
-            )
+            ),
           ],
         ),
       ),

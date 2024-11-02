@@ -55,12 +55,12 @@ class _ArticlePageState extends State<ArticlePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Articles"),
+        title: const Text("Vêtements"),
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : hasError
-              ? const Center(child: Text('Failed to load articles'))
+              ? const Center(child: Text('Échec du chargement des vêtements'))
               : ListView.builder(
                   itemCount: articles.length,
                   itemBuilder: (context, index) {
@@ -114,14 +114,14 @@ class _ArticlePageState extends State<ArticlePage> {
                                   ),
                                   const SizedBox(height: 10),
                                   Text(
-                                    "Size: ${article["size"]}",
+                                    "Taille : ${article["size"]}",
                                     style: const TextStyle(
                                       fontSize: 16,
                                       color: Colors.white70,
                                     ),
                                   ),
                                   Text(
-                                    "Price: ${article["price"]}",
+                                    "Prix : ${article["price"]}",
                                     style: const TextStyle(
                                       fontSize: 16,
                                       color: Colors.white70,

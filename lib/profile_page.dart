@@ -57,12 +57,12 @@ class _ProfilePageState extends State<ProfilePage> {
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load user profile: ${response.statusCode}')),
+          SnackBar(content: Text('Échec du chargement du profil utilisateur : ${response.statusCode}')),
         );
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('User email not found in session')),
+        const SnackBar(content: Text('Email de l’utilisateur non trouvé dans la session')),
       );
     }
   }
@@ -89,16 +89,16 @@ class _ProfilePageState extends State<ProfilePage> {
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated successfully')),
+          const SnackBar(content: Text('Profil mis à jour avec succès')),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update profile: ${response.statusCode}')),
+          SnackBar(content: Text('Échec de la mise à jour du profil : ${response.statusCode}')),
         );
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('User email not found in session')),
+        const SnackBar(content: Text('Email de l’utilisateur non trouvé dans la session')),
       );
     }
   }
@@ -124,7 +124,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: const Text('Profil'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -134,7 +134,7 @@ class _ProfilePageState extends State<ProfilePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               const Text(
-                'Profile Information',
+                'Informations du Profil',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
@@ -150,7 +150,7 @@ class _ProfilePageState extends State<ProfilePage> {
               TextFormField(
                 controller: _passwordController,
                 decoration: const InputDecoration(
-                  labelText: 'Password',
+                  labelText: 'Mot de passe',
                   border: OutlineInputBorder(),
                 ),
                 enabled: false,
@@ -160,12 +160,12 @@ class _ProfilePageState extends State<ProfilePage> {
               TextFormField(
                 controller: _birthdayController,
                 decoration: const InputDecoration(
-                  labelText: 'Birthday',
+                  labelText: 'Anniversaire',
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your birthday';
+                    return 'Veuillez entrer votre anniversaire';
                   }
                   return null;
                 },
@@ -174,12 +174,12 @@ class _ProfilePageState extends State<ProfilePage> {
               TextFormField(
                 controller: _addressController,
                 decoration: const InputDecoration(
-                  labelText: 'Address',
+                  labelText: 'Adresse',
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your address';
+                    return 'Veuillez entrer votre adresse';
                   }
                   return null;
                 },
@@ -187,13 +187,14 @@ class _ProfilePageState extends State<ProfilePage> {
               const SizedBox(height: 10),
               TextFormField(
                 controller: _postalCodeController,
+                keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
                   labelText: 'Code Postal',
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your postal code';
+                    return 'Veuillez entrer votre code postal';
                   }
                   return null;
                 },
@@ -207,29 +208,39 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your city';
+                    return 'Veuillez entrer votre ville';
                   }
                   return null;
                 },
               ),
               const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    _updateUserProfile();
-                  }
-                },
-                child: const Text('Update Profile'),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          _updateUserProfile();
+                        }
+                      },
+                      child: const Text('Valider'),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _addArticle,
+                      child: const Text('Ajouter un Article'),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _deconnecter,
-                child: const Text('Déconnecter'),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _addArticle,
-                child: const Text('Add an Article'),
+              Center(
+                child: ElevatedButton(
+                  onPressed: _deconnecter,
+                  child: const Text('Se déconnecter'),
+                ),
               ),
             ],
           ),

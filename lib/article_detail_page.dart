@@ -64,12 +64,12 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
         _checkIfInCart(); // Check if the item is already in the cart
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load cart items: ${response.statusCode}')),
+          SnackBar(content: Text('Échec du chargement des articles du panier : ${response.statusCode}')),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error fetching cart items')),
+        const SnackBar(content: Text('Erreur lors de la récupération des articles du panier')),
       );
     } finally {
       setState(() {
@@ -94,7 +94,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
 
     if (loggedInEmail == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('User not logged in')),
+        const SnackBar(content: Text('Utilisateur non connecté')),
       );
       return;
     }
@@ -129,16 +129,16 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
           _isInCart = true;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Added to Cart!')),
+          const SnackBar(content: Text('Ajouté au panier !')),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to add to cart: ${response.body}')),
+          SnackBar(content: Text('Échec de l\'ajout au panier : ${response.body}')),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+        SnackBar(content: Text('Erreur : $e')),
       );
     }
   }
@@ -188,11 +188,11 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  Text("Category: ${widget.category}", style: const TextStyle(fontSize: 18)),
-                  Text("Size: ${widget.size}", style: const TextStyle(fontSize: 18)),
-                  Text("Brand: ${widget.brand}", style: const TextStyle(fontSize: 18)),
+                  Text("Catégorie : ${widget.category}", style: const TextStyle(fontSize: 18)),
+                  Text("Taille : ${widget.size}", style: const TextStyle(fontSize: 18)),
+                  Text("Marque : ${widget.brand}", style: const TextStyle(fontSize: 18)),
                   Text(
-                    "Price: ${widget.price}",
+                    "Prix : ${widget.price}",
                     style: const TextStyle(
                       fontSize: 18,
                       color: Colors.redAccent,
@@ -203,13 +203,22 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
                   Center(
                     child: _isInCart
                         ? const Text(
-                            'Item already in cart',
+                            'Article déjà dans le panier',
                             style: TextStyle(fontSize: 16, color: Colors.green),
                           )
                         : ElevatedButton(
                             onPressed: () => _addToCart(context),
-                            child: const Text("Add to Cart"),
+                            child: const Text("Ajouter au panier"),
                           ),
+                  ),
+                  const SizedBox(height: 10), // Add spacing before the return button
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context); // Go back to the previous screen
+                      },
+                      child: const Text("Retour"),
+                    ),
                   ),
                 ],
               ),

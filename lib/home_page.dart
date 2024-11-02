@@ -27,22 +27,22 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Shopping App'),
+        title: const Text('Application de Shopping'), // Changed to French
       ),
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Articles',
+            icon: Icon(Icons.attach_money), // Changed to $ icon
+            label: 'Acheter', // Changed text to French
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_cart),
-            label: 'Cart',
+            label: 'Panier', // Changed text to French
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
-            label: 'Profile',
+            label: 'Profil', // Changed text to French
           ),
         ],
         currentIndex: _selectedIndex,
