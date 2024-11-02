@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'cart_model.dart';
 import 'cart_page.dart';
+import 'session_manager.dart'; // Make sure this file manages user session appropriately
 
 class ArticleDetailPage extends StatefulWidget {
   final String image;
@@ -27,25 +30,62 @@ class ArticleDetailPage extends StatefulWidget {
 class _ArticleDetailPageState extends State<ArticleDetailPage> {
   bool _isInCart = false;
 
-  void _addToCart(BuildContext context) {
+  Future<void> _addToCart(BuildContext context) async {
+    // Get the logged-in user's email
+    final String? loggedInEmail = SessionManager().userEmail; // Get the logged-in email
+
+    if (loggedInEmail == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User not logged in')),
+      );
+      return;
+    }
+
+    // Define the item details to add to the cart
     final newItem = {
-      "image": widget.image,
+      "id": DateTime.now().millisecondsSinceEpoch.toString(), // Unique item ID
       "title": widget.title,
       "category": widget.category,
-      "size": widget.size,
       "brand": widget.brand,
+      "size": widget.size,
       "price": widget.price,
+      "image": widget.image,
     };
 
-    CartModel().addItem(newItem);
+    // Prepare the request payload
+    final body = {
+      "user": loggedInEmail,
+      "item": [newItem],
+    };
 
-    setState(() {
-      _isInCart = true;
-    });
+    // Make a PUT request to the API Gateway
+    final url = Uri.parse("https://g2izee01b8.execute-api.us-east-1.amazonaws.com/dev/cart");
+    try {
+      final response = await http.put(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: json.encode(body),
+      );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Added to Cart!')),
-    );
+      if (response.statusCode == 200) {
+        setState(() {
+          _isInCart = true;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Added to Cart!')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to add to cart: ${response.body}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
   }
 
   @override
@@ -91,11 +131,11 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
               ),
             ),
             const SizedBox(height: 10),
-            Text("Catégorie: ${widget.category}", style: const TextStyle(fontSize: 18)),
-            Text("Taille: ${widget.size}", style: const TextStyle(fontSize: 18)),
-            Text("Marque: ${widget.brand}", style: const TextStyle(fontSize: 18)),
+            Text("Category: ${widget.category}", style: const TextStyle(fontSize: 18)),
+            Text("Size: ${widget.size}", style: const TextStyle(fontSize: 18)),
+            Text("Brand: ${widget.brand}", style: const TextStyle(fontSize: 18)),
             Text(
-              "Prix: ${widget.price}",
+              "Price: ${widget.price}",
               style: const TextStyle(
                 fontSize: 18,
                 color: Colors.redAccent,

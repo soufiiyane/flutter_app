@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert'; // For JSON encoding/decoding
+import 'dart:convert';
 import 'cart_model.dart';
-import 'session_manager.dart'; // Make sure this file manages user session appropriately
+import 'session_manager.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({Key? key}) : super(key: key);
@@ -12,22 +12,22 @@ class CartPage extends StatefulWidget {
 }
 
 class _CartPageState extends State<CartPage> {
-  List<dynamic> cartItems = []; // Initialize an empty list for cart items
-  bool isLoading = true; // Track loading state
+  List<dynamic> cartItems = [];
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _fetchCartItems(); // Fetch cart items when the widget is initialized
+    _fetchCartItems();
   }
 
   Future<void> _fetchCartItems() async {
-    final String? loggedInEmail = SessionManager().userEmail; // Get the logged-in email
+    final String? loggedInEmail = SessionManager().userEmail;
     if (loggedInEmail == null) {
       setState(() {
         isLoading = false;
       });
-      return; // Exit if no user is logged in
+      return;
     }
 
     final url = Uri.parse('https://g2izee01b8.execute-api.us-east-1.amazonaws.com/dev/cart');
@@ -36,20 +36,15 @@ class _CartPageState extends State<CartPage> {
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'user': loggedInEmail}), // Send the email in the request body
+        body: jsonEncode({'user': loggedInEmail}),
       );
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseBody = jsonDecode(response.body);
-        final String body = responseBody['body']; // Extract the 'body' as a string
-
-        // Decode the JSON body into a map
+        final String body = responseBody['body'];
         final Map<String, dynamic> decodedBody = jsonDecode(body);
-
-        // Extract the 'Items' list from the decoded body
-        cartItems = decodedBody['Items']; // Assign to cartItems
+        cartItems = decodedBody['Items'];
       } else {
-        // Handle non-200 responses
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to load cart items: ${response.statusCode}')),
         );
@@ -60,8 +55,78 @@ class _CartPageState extends State<CartPage> {
       );
     } finally {
       setState(() {
-        isLoading = false; // Stop loading regardless of success or failure
+        isLoading = false;
       });
+    }
+  }
+
+  Future<void> _removeItemFromCart(String itemId) async {
+    final String? loggedInEmail = SessionManager().userEmail;
+    if (loggedInEmail == null) return;
+
+    final url = Uri.parse('https://g2izee01b8.execute-api.us-east-1.amazonaws.com/dev/cart');
+
+    try {
+      final response = await http.delete(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'user': loggedInEmail, 'item_id': itemId}),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          cartItems.removeWhere((item) => item['id'] == itemId);
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Item removed from cart')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to remove item: ${response.statusCode}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error removing item from cart')),
+      );
+    }
+  }
+
+  Future<void> _clearCartItems() async {
+    final String? loggedInEmail = SessionManager().userEmail;
+    if (loggedInEmail == null) return;
+
+    final url = Uri.parse('https://g2izee01b8.execute-api.us-east-1.amazonaws.com/dev/cart');
+    bool hasErrors = false;
+
+    for (var item in cartItems) {
+      final String itemId = item['id'];
+      try {
+        final response = await http.delete(
+          url,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({'user': loggedInEmail, 'item_id': itemId}),
+        );
+
+        if (response.statusCode != 200) {
+          hasErrors = true;
+        }
+      } catch (e) {
+        hasErrors = true;
+      }
+    }
+
+    if (hasErrors) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Some items could not be removed')),
+      );
+    } else {
+      setState(() {
+        cartItems.clear();
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Cart cleared!")),
+      );
     }
   }
 
@@ -72,7 +137,7 @@ class _CartPageState extends State<CartPage> {
         title: const Text("My Cart"),
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator()) // Show loading indicator
+          ? const Center(child: CircularProgressIndicator())
           : cartItems.isEmpty
               ? const Center(child: Text("Your cart is empty."))
               : ListView.builder(
@@ -105,9 +170,7 @@ class _CartPageState extends State<CartPage> {
                         trailing: IconButton(
                           icon: const Icon(Icons.remove_circle, color: Colors.red),
                           onPressed: () {
-                            setState(() {
-                              // Logic to remove item from the cart can be added here if needed
-                            });
+                            _removeItemFromCart(item["id"]);
                           },
                         ),
                       ),
@@ -117,14 +180,7 @@ class _CartPageState extends State<CartPage> {
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ElevatedButton(
-          onPressed: () {
-            setState(() {
-              CartModel().clearCart(); // Assuming you have a clearCart method in your CartModel
-            });
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Cart cleared!")),
-            );
-          },
+          onPressed: _clearCartItems,
           child: const Text("Clear Cart"),
         ),
       ),
