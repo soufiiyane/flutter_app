@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
+import 'add_article_page.dart'; // Import the AddArticlePage
 import 'dart:convert'; // For JSON encoding/decoding
 import 'package:http/http.dart' as http;
 import 'session_manager.dart'; // Import your session manager
@@ -112,6 +113,13 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  void _addArticle() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const AddArticlePage()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -217,6 +225,11 @@ class _ProfilePageState extends State<ProfilePage> {
               ElevatedButton(
                 onPressed: _deconnecter,
                 child: const Text('Déconnecter'),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _addArticle,
+                child: const Text('Add an Article'),
               ),
             ],
           ),
