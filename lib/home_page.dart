@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'article_page.dart'; // Import ArticlePage
 import 'cart_page.dart'; // Import CartPage
 import 'profile_page.dart'; // Import ProfilePage
+import 'chatbot.dart'; // Import the ChatBotDialog widget
 
 class HomePage extends StatefulWidget {
   @override
@@ -23,26 +24,45 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void _openChatBot() {
+    showDialog(
+      context: context,
+      builder: (context) => ChatBotDialog(), // Show the chatbot dialog
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Application de Shopping'), // Changed to French
+        title: const Text('Application de Shopping'),
       ),
-      body: _pages[_selectedIndex],
+      body: Stack(
+        children: [
+          _pages[_selectedIndex],
+          Positioned(
+            bottom: 20,
+            right: 20,
+            child: FloatingActionButton(
+              onPressed: _openChatBot,
+              child: const Icon(Icons.chat),
+            ),
+          ),
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.attach_money), // Changed to $ icon
-            label: 'Acheter', // Changed text to French
+            icon: Icon(Icons.attach_money),
+            label: 'Acheter',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_cart),
-            label: 'Panier', // Changed text to French
+            label: 'Panier',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
-            label: 'Profil', // Changed text to French
+            label: 'Profil',
           ),
         ],
         currentIndex: _selectedIndex,
