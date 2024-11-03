@@ -23,7 +23,6 @@ class _AddArticlePageState extends State<AddArticlePage> {
   Uint8List? _imageData; 
 
   Future<void> _pickImage() async {
-
     final Uint8List? imageData = await ImagePickerWeb.getImageAsBytes();
     if (imageData != null) {
       setState(() {
@@ -125,7 +124,16 @@ class _AddArticlePageState extends State<AddArticlePage> {
                 controller: _priceController,
                 decoration: const InputDecoration(labelText: 'Prix'),
                 keyboardType: TextInputType.number,
-                validator: (value) => value!.isEmpty ? 'Entrez un prix' : null,
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return 'Entrez un prix';
+                  }
+                  final RegExp priceRegExp = RegExp(r'^\d+(\.\d{1,2})?$');
+                  if (!priceRegExp.hasMatch(value)) {
+                    return 'Format invalide, utilisez 00.00';
+                  }
+                  return null; 
+                },
               ),
               const SizedBox(height: 10),
               TextFormField(
@@ -137,7 +145,7 @@ class _AddArticlePageState extends State<AddArticlePage> {
               TextFormField(
                 controller: _titleController,
                 decoration: const InputDecoration(labelText: 'Titre'),
-                validator: (value) => value!.isEmpty ? 'Entrez un titre' : null,
+                validator: (value) => value!.isEmpty ? 'Entrez une titre' : null,
               ),
               const SizedBox(height: 20),
               ElevatedButton(

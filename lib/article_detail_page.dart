@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'cart_model.dart';
 import 'cart_page.dart';
 import 'session_manager.dart'; 
 
