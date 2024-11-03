@@ -1,5 +1,3 @@
-// cart_model.dart
-
 class CartModel {
   static final CartModel _instance = CartModel._internal();
   List<Map<String, dynamic>> _cartItems = [];

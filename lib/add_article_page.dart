@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker_web/image_picker_web.dart';
-import 'dart:typed_data'; // For handling image data
-import 'dart:convert'; // For JSON encoding
+import 'dart:typed_data'; 
+import 'dart:convert'; 
 import 'package:http/http.dart' as http;
 
 class AddArticlePage extends StatefulWidget {
@@ -20,26 +20,24 @@ class _AddArticlePageState extends State<AddArticlePage> {
   final TextEditingController _sizeController = TextEditingController();
   final TextEditingController _titleController = TextEditingController();
 
-  Uint8List? _imageData; // Store the uploaded image data here
+  Uint8List? _imageData; 
 
   Future<void> _pickImage() async {
-    // Pick an image from the user’s files
+
     final Uint8List? imageData = await ImagePickerWeb.getImageAsBytes();
     if (imageData != null) {
       setState(() {
         _imageData = imageData;
-        _categoryController.clear(); // Clear any existing text
-        _categoryController.text = 'Pantalon'; // Set default category
+        _categoryController.clear(); 
+        _categoryController.text = 'Pantalon'; 
       });
     }
   }
 
   void _submitArticle() async {
     if (_formKey.currentState!.validate() && _imageData != null) {
-      // Convert image data to Base64
       String base64Image = base64Encode(_imageData!);
 
-      // Prepare the data to send
       Map<String, dynamic> articleData = {
         "brand": _brandController.text,
         "category": _categoryController.text,
@@ -49,12 +47,10 @@ class _AddArticlePageState extends State<AddArticlePage> {
         "image_data": base64Image,
       };
 
-      // Show success message immediately
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Article ajouté avec succès')),
       );
 
-      // Send the POST request without waiting for the response
       try {
         await http.post(
           Uri.parse('https://g2izee01b8.execute-api.us-east-1.amazonaws.com/dev/articles'),
@@ -64,23 +60,20 @@ class _AddArticlePageState extends State<AddArticlePage> {
           body: jsonEncode(articleData),
         );
       } catch (error) {
-        // Handle network errors or any exceptions
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Erreur lors de l\'ajout de l\'article: $error')),
         );
       }
 
-      // Clear the form after submission
       _brandController.clear();
       _categoryController.clear();
       _priceController.clear();
       _sizeController.clear();
       _titleController.clear();
       setState(() {
-        _imageData = null; // Reset image data
+        _imageData = null; 
       });
     } else if (_imageData == null) {
-      // Show error if no image is uploaded
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Veuillez télécharger une image')),
       );

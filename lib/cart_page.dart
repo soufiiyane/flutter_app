@@ -42,8 +42,8 @@ class _CartPageState extends State<CartPage> {
         final Map<String, dynamic> responseBody = jsonDecode(response.body);
         final String body = responseBody['body'];
         final Map<String, dynamic> decodedBody = jsonDecode(body);
-        cartItems = decodedBody['Items'] ?? []; // Ensure Items is not null
-        print("Fetched cart items: $cartItems"); // Debug print for cart items
+        cartItems = decodedBody['Items'] ?? []; 
+        print("Fetched cart items: $cartItems"); 
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to load cart items: ${response.statusCode}')),
@@ -104,7 +104,6 @@ class _CartPageState extends State<CartPage> {
     return sum + price;
   });
 
-  print("Total calculated: $total"); // Debug print for total
   return total;
 }
 
@@ -130,24 +129,24 @@ class _CartPageState extends State<CartPage> {
                             margin: const EdgeInsets.all(10),
                             child: ListTile(
                               leading: Image.network(
-                                item["image"] ?? '', // Provide a fallback in case of null
+                                item["image"] ?? '', 
                                 width: 50,
                                 height: 50,
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) => const Icon(Icons.error),
                               ),
-                              title: Text(item["title"] ?? 'Unknown Title'), // Provide a fallback
+                              title: Text(item["title"] ?? 'Unknown Title'), 
                               subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("Taille: ${item["size"] ?? 'Unknown Size'}"), // Provide a fallback
+                                  Text("Taille: ${item["size"] ?? 'Unknown Size'}"), 
                                   Text("Prix: ${item["price"] ?? '0.00'}", style: const TextStyle(color: Colors.redAccent)),
                                 ],
                               ),
                               trailing: IconButton(
                                 icon: const Icon(Icons.remove_circle, color: Colors.red),
                                 onPressed: () {
-                                  _removeItemFromCart(item["id"] ?? ''); // Handle null safely
+                                  _removeItemFromCart(item["id"] ?? ''); 
                                 },
                               ),
                             ),

@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const LoginPage(title: 'Login'), // Set LoginPage as home
+      home: const LoginPage(title: 'Login'), 
     );
   }
 }
@@ -49,11 +49,10 @@ class BottomNavBar extends StatefulWidget {
 class _BottomNavBarState extends State<BottomNavBar> {
   int _selectedIndex = 0;
 
-  // List of pages to navigate to
   final List<Widget> _pages = [
-    ArticlePage(), // Home Page
-    CartPage(),    // Cart Page
-    ProfilePage(), // Profile Page
+    ArticlePage(), 
+    CartPage(),    
+    ProfilePage(), 
   ];
 
   void _onItemTapped(int index) {

@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'cart_model.dart';
 import 'cart_page.dart';
-import 'session_manager.dart'; // Ensure this file manages user session appropriately
+import 'session_manager.dart'; 
 
 class ArticleDetailPage extends StatefulWidget {
   final String image;
@@ -61,7 +61,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
         final String body = responseBody['body'];
         final Map<String, dynamic> decodedBody = jsonDecode(body);
         cartItems = decodedBody['Items'];
-        _checkIfInCart(); // Check if the item is already in the cart
+        _checkIfInCart(); 
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Échec du chargement des articles du panier : ${response.statusCode}')),
@@ -80,7 +80,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
 
   void _checkIfInCart() {
     for (var item in cartItems) {
-      if (item['title'] == widget.title) { // Match based on title or a unique identifier
+      if (item['title'] == widget.title) { 
         setState(() {
           _isInCart = true;
         });
@@ -161,7 +161,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
         ],
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator()) // Show loading indicator while fetching
+          ? Center(child: CircularProgressIndicator()) 
           : Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -211,11 +211,11 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
                             child: const Text("Ajouter au panier"),
                           ),
                   ),
-                  const SizedBox(height: 10), // Add spacing before the return button
+                  const SizedBox(height: 10), 
                   Center(
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.pop(context); // Go back to the previous screen
+                        Navigator.pop(context); 
                       },
                       child: const Text("Retour"),
                     ),

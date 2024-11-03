@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'article_page.dart'; // Import ArticlePage
-import 'cart_page.dart'; // Import CartPage
-import 'profile_page.dart'; // Import ProfilePage
-import 'chatbot.dart'; // Import the ChatBotDialog widget
+import 'article_page.dart'; 
+import 'cart_page.dart'; 
+import 'profile_page.dart'; 
+import 'chatbot.dart'; 
 
 class HomePage extends StatefulWidget {
   @override
@@ -27,7 +27,7 @@ class _HomePageState extends State<HomePage> {
   void _openChatBot() {
     showDialog(
       context: context,
-      builder: (context) => ChatBotDialog(), // Show the chatbot dialog
+      builder: (context) => ChatBotDialog(), 
     );
   }
 

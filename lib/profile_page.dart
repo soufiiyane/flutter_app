@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
-import 'add_article_page.dart'; // Import the AddArticlePage
-import 'dart:convert'; // For JSON encoding/decoding
+import 'add_article_page.dart'; 
+import 'dart:convert'; 
 import 'package:http/http.dart' as http;
-import 'session_manager.dart'; // Import your session manager
+import 'session_manager.dart'; 
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -49,7 +49,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
         setState(() {
           _emailController.text = userData['email'];
-          _passwordController.text = userData['password']; // Handle carefully
+          _passwordController.text = userData['password']; 
           _birthdayController.text = userData['birthday'];
           _addressController.text = userData['address'];
           _postalCodeController.text = userData['codePostal'];

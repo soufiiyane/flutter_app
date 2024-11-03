@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dart:convert'; // For JSON encoding/decoding
+import 'dart:convert'; 
 import 'package:http/http.dart' as http;
 import 'article_detail_page.dart';
 
@@ -36,7 +36,6 @@ class _ArticlePageState extends State<ArticlePage> {
           isLoading = false;
         });
       } else {
-        // Error response
         setState(() {
           hasError = true;
           isLoading = false;

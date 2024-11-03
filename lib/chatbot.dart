@@ -11,21 +11,19 @@ class _ChatBotDialogState extends State<ChatBotDialog> {
   final TextEditingController _messageController = TextEditingController();
   List<Map<String, String>> _messages = [
     {"sender": "chatbot", "text": "Bonjour, je suis un chatbot IA basé sur GPT. Vous pouvez communiquer avec moi pour vous aider sur n'importe quel sujet!"}
-  ]; // Initial message from chatbot
+  ]; 
 
   Future<void> _sendMessage() async {
     if (_messageController.text.isNotEmpty) {
       setState(() {
-        // Add user message
         _messages.add({"sender": "user", "text": _messageController.text});
       });
 
       String responseText = await _getResponseFromOpenAI(_messageController.text);
       
       setState(() {
-        // Add chatbot's response
         _messages.add({"sender": "chatbot", "text": responseText});
-        _messageController.clear(); // Clear input field after sending
+        _messageController.clear(); 
       });
     }
   }
@@ -58,7 +56,7 @@ class _ChatBotDialogState extends State<ChatBotDialog> {
         return "Désolé, je n'ai pas pu obtenir de réponse.";
       }
     } catch (e) {
-      print('Exception: $e'); // Log exception for debugging
+      print('Exception: $e'); 
       return "Une erreur est survenue : $e";
     }
   }
@@ -88,7 +86,7 @@ class _ChatBotDialogState extends State<ChatBotDialog> {
       title: const Text('ChatBot'),
       content: Container(
         width: double.maxFinite,
-        height: 400, // Fixed height for the dialog
+        height: 400, 
         child: Column(
           children: [
             Expanded(

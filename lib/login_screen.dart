@@ -2,8 +2,8 @@ import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'home_page.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert'; // For JSON encoding/decoding
-import 'session_manager.dart'; // Import your session manager
+import 'dart:convert'; 
+import 'session_manager.dart'; 
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key, required this.title}) : super(key: key);
@@ -65,19 +65,19 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  // Function to show invalid login message
+  
   void _showInvalidLoginMessage() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Email ou mot de passe invalide')),
     );
-    print('Tentative de connexion invalide'); // Log the invalid attempt
+    print('Tentative de connexion invalide'); 
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tenshiy application'), // Add your application name here
+        title: const Text('Tenshiy application'), 
       ),
       backgroundColor: Theme.of(context).colorScheme.background,
       body: Container(
@@ -143,7 +143,6 @@ class _LoginPageState extends State<LoginPage> {
                       if (_formKey.currentState!.validate()) {
                         _login();
                       } else {
-                        // Optionally log the error for validation failure
                         print('Validation échouée : champs vides');
                       }
                     },
@@ -151,7 +150,7 @@ class _LoginPageState extends State<LoginPage> {
                       padding: const EdgeInsets.fromLTRB(40, 15, 40, 15),
                     ),
                     child: const Text(
-                      'Se connecter', // Keep button text in French
+                      'Se connecter', 
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
