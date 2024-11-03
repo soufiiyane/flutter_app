@@ -76,7 +76,7 @@ Amazon API Gateway est un service qui facilite la création, la publication, la 
 ![Amazon API Gateway](screenshots/aws/apigateway.png)
 
 ### Amazon DynamoDB
-Amazon DynamoDB est une base de données NoSQL entièrement gérée qui offre des performances rapides et prévisibles avec une évolutivité transparente. J'ai utilisé DynamoDB pour stocker les données des articles et des utilisateurs dans ce projet.
+Amazon DynamoDB est une base de données NoSQL entièrement gérée qui offre des performances rapides et prévisibles avec une évolutivité transparente. J'ai utilisé DynamoDB pour stocker les données des articles, panier et des utilisateurs dans ce projet.
 
 ![Amazon DynamoDB](screenshots/aws/dynamodb.png)
 
