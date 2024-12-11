@@ -28,6 +28,14 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
     }
   ];
 
+  bool isAccordion1Open = true; // Default to open
+
+  void _toggleAccordion1() {
+    setState(() {
+      isAccordion1Open = !isAccordion1Open;
+    });
+  }
+
   void _upvoteArticle() {
     setState(() {
       articleUpvotes++;
@@ -129,18 +137,54 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
                 ],
               ),
               const SizedBox(height: 32),
+              // Accordion 1
+              GestureDetector(
+                onTap: _toggleAccordion1,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Precautions for Medicinal Plants',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        Icon(
+                          isAccordion1Open ? Icons.expand_less : Icons.expand_more,
+                        ),
+                      ],
+                    ),
+                    if (isAccordion1Open)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: const [
+                            Text("• Always consult a healthcare provider before use."),
+                            Text("• Be aware of potential allergic reactions."),
+                            Text("• Avoid combining with prescription medications without advice."),
+                            Text("• Use recommended dosages to prevent toxicity."),
+                            Text("• Keep away from children."),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const Divider(),
+              const SizedBox(height: 32),
               // Recommendations Section
               const Text(
                 'Recommended Articles',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
-              // Using PageView to swipe between two articles
               SizedBox(
-                height: 250, // Set the height as needed
+                height: 250,
                 child: PageView.builder(
-                  itemCount: 3, // Total pages, showing two articles per page
-                  controller: PageController(viewportFraction: 0.9), // Slight margin between pages
+                  itemCount: 3,
+                  controller: PageController(viewportFraction: 0.9),
                   itemBuilder: (context, pageIndex) {
                     int startIndex = pageIndex * 2;
                     return Row(
@@ -171,20 +215,17 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Comment User
                         Text(
                           comment['user'],
                           style: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 16),
                         ),
                         const SizedBox(height: 4),
-                        // Comment Text
                         Text(
                           comment['comment'],
                           style: const TextStyle(fontSize: 16),
                         ),
                         const SizedBox(height: 8),
-                        // Like/Dislike for Comment
                         Row(
                           children: [
                             IconButton(
@@ -206,7 +247,6 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
                 },
               ),
               const SizedBox(height: 16),
-              // Add New Comment
               TextField(
                 controller: _commentController,
                 decoration: InputDecoration(
@@ -227,7 +267,6 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
     );
   }
 
-  // Helper method to build article cards
   Widget _buildArticleCard(int index) {
     final recommendedArticle = {
       "title": "Recommended Article ${index + 1}",
@@ -255,7 +294,6 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image
             ClipRRect(
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(10),
@@ -268,7 +306,6 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
                 fit: BoxFit.cover,
               ),
             ),
-            // Title
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
@@ -281,7 +318,6 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            // Tags
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
@@ -294,7 +330,6 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            // Short Description
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
@@ -310,7 +345,6 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
     );
   }
 
-  // Helper method to shorten descriptions
   String _getShortDescription(String description) {
     final words = description.split(' ');
     if (words.length > 10) {
