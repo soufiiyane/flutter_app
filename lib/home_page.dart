@@ -12,10 +12,14 @@ class _HomePageState extends State<HomePage> {
   bool _isChatVisible = false;
   TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  
+  // Search criteria selection
+  String _selectedSearchType = 'Name'; // Default search type
   final List<Map<String, String>> _articles = List.generate(15, (index) {
     return {
       "title": "Article ${index + 1}",
       "tags": "Tag${index + 1}, Category",
+      "category": "Category ${index + 1}",
       "imageUrl": "https://images.unsplash.com/photo-1607863680132-4a1ed66c6263?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       "description": "This is a sample description for article ${index + 1}. This description is meant to show how the article description text looks when it's about 100-150 words long.",
     };
@@ -67,47 +71,86 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  // Method to filter articles based on search type and query
+  List<Map<String, String>> _filterArticles(String query) {
+    return _articles.where((article) {
+      if (_selectedSearchType == 'Name') {
+        return article['title']!.toLowerCase().contains(query.toLowerCase());
+      } else if (_selectedSearchType == 'Tags') {
+        return article['tags']!.toLowerCase().contains(query.toLowerCase());
+      } else if (_selectedSearchType == 'Category') {
+        return article['category']!.toLowerCase().contains(query.toLowerCase());
+      }
+      return false;
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
-    int totalPages = (_articles.length / _pageSize).ceil();
+    int totalPages = (_filterArticles(_controller.text).length / _pageSize).ceil();
 
     return Scaffold(
       appBar: AppBar(
         title: const Text("Blog"),
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.blueAccent,
+        elevation: 0,  // Remove elevation for a flat look
       ),
       body: Stack(
         children: [
           Column(
             children: [
-              // Search Bar
+              // Search Section
               Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextField(
-                  decoration: InputDecoration(
-                    hintText: "Search articles...",
-                    prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8.0),
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    // Segmented Control for Search Criteria
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildFilterOption("Name"),
+                        _buildFilterOption("Tags"),
+                        _buildFilterOption("Category"),
+                      ],
                     ),
-                  ),
+                    const SizedBox(height: 16),
+                    // Search Bar
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: TextField(
+                        controller: _controller,
+                        onChanged: (query) {
+                          setState(() {});
+                        },
+                        decoration: InputDecoration(
+                          hintText: "Search articles...",
+                          prefixIcon: const Icon(Icons.search, color: Colors.blue),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              // Articles
+              // Articles Grid
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: GridView.builder(
                     controller: _scrollController,
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
-                      crossAxisSpacing: 8.0,
-                      mainAxisSpacing: 8.0,
+                      crossAxisSpacing: 16.0,
+                      mainAxisSpacing: 16.0,
                       childAspectRatio: 0.75,
                     ),
-                    itemCount: _currentPageArticles.length,
+                    itemCount: _filterArticles(_controller.text).length,
                     itemBuilder: (context, index) {
-                      final article = _currentPageArticles[index];
+                      final article = _filterArticles(_controller.text)[index];
                       return GestureDetector(
                         onTap: () {
                           // Navigate to the article detail page on tap.
@@ -123,25 +166,26 @@ class _HomePageState extends State<HomePage> {
                         child: Card(
                           elevation: 4,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               ClipRRect(
-                                borderRadius: const BorderRadius.only(
-                                  topLeft: Radius.circular(10),
-                                  topRight: Radius.circular(10),
+                                borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(12),
+                                  topRight: Radius.circular(12),
                                 ),
                                 child: Image.network(
                                   article['imageUrl']!,
                                   width: double.infinity,
                                   fit: BoxFit.cover,
+                                  height: 150,  // Fixed height for image
                                 ),
                               ),
                               Padding(
-                                padding: const EdgeInsets.all(8.0),
+                                padding: const EdgeInsets.all(12.0),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -150,15 +194,16 @@ class _HomePageState extends State<HomePage> {
                                       style: const TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
+                                        color: Colors.blueAccent,
                                       ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                    const SizedBox(height: 4),
+                                    const SizedBox(height: 8),
                                     Text(
                                       article['tags']!,
-                                      style: const TextStyle(
-                                        color: Colors.blueGrey,
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
                                         fontSize: 12,
                                       ),
                                     ),
@@ -190,12 +235,12 @@ class _HomePageState extends State<HomePage> {
                         margin: const EdgeInsets.symmetric(horizontal: 4),
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: _currentPage == index ? Colors.blue : Colors.transparent,
+                          color: _currentPage == index ? Colors.blueAccent : Colors.transparent,
                           border: Border.all(
-                            color: _currentPage == index ? Colors.blue : Colors.grey,
+                            color: _currentPage == index ? Colors.blueAccent : Colors.grey,
                             width: 1,
                           ),
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
                           '${index + 1}',
@@ -224,7 +269,7 @@ class _HomePageState extends State<HomePage> {
               child: Container(
                 padding: const EdgeInsets.all(16.0),
                 decoration: BoxDecoration(
-                  color: Colors.blue,
+                  color: Colors.blueAccent,
                   borderRadius: BorderRadius.circular(30),
                   boxShadow: [
                     BoxShadow(
@@ -272,37 +317,41 @@ class _HomePageState extends State<HomePage> {
                                 margin: const EdgeInsets.symmetric(vertical: 4.0),
                                 decoration: BoxDecoration(
                                   color: message['sender'] == 'User'
-                                      ? Colors.blue[100]
+                                      ? Colors.blueAccent.withOpacity(0.1)
                                       : Colors.grey[200],
                                   borderRadius: BorderRadius.circular(12.0),
                                 ),
                                 child: Text(
                                   message['message']!,
-                                  style: TextStyle(fontSize: 16.0),
+                                  style: TextStyle(
+                                    color: message['sender'] == 'User'
+                                        ? Colors.blueAccent
+                                        : Colors.black,
+                                  ),
                                 ),
                               ),
                             );
                           },
                         ),
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0), // Reduced padding
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12.0),
-                          color: Colors.grey[200],
-                        ),
-                        child: TextField(
-                          controller: _controller,
-                          decoration: InputDecoration(
-                            hintText: "Type your message...",
-                            border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0), // Reduced padding
-                            suffixIcon: IconButton(
-                              icon: const Icon(Icons.send),
-                              onPressed: _sendMessage,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _controller,
+                              decoration: const InputDecoration(
+                                hintText: 'Type your message...',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.all(Radius.circular(12.0)),
+                                ),
+                              ),
                             ),
                           ),
-                        ),
+                          IconButton(
+                            icon: const Icon(Icons.send),
+                            onPressed: _sendMessage,
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -310,6 +359,33 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFilterOption(String option) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedSearchType = option;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+        decoration: BoxDecoration(
+          color: _selectedSearchType == option ? Colors.blueAccent : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: _selectedSearchType == option ? Colors.blueAccent : Colors.grey,
+          ),
+        ),
+        child: Text(
+          option,
+          style: TextStyle(
+            color: _selectedSearchType == option ? Colors.white : Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
     );
   }
