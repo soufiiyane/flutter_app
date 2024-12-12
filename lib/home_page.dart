@@ -164,6 +164,32 @@ class _HomePageState extends State<HomePage> {
     return _filteredPlants.sublist(startIndex, endIndex);
   }
 
+  Widget _buildPageButton(int page) {
+    final isSelected = _currentPage == page;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _currentPage = page;
+        });
+      },
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 4),
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? accentColor : accentColor.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          '${page}',
+          style: TextStyle(
+            color: isSelected ? Colors.white : primaryColor,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildPaginationControls() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -178,20 +204,33 @@ class _HomePageState extends State<HomePage> {
                 }
               : null,
         ),
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: accentColor.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(
-            'Page ${_currentPage} of ${_totalPages}',
-            style: TextStyle(
-              color: primaryColor,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
+        if (_totalPages <= 7) ...[
+          // Show all pages if total pages are 7 or less
+          for (int i = 1; i <= _totalPages; i++)
+            _buildPageButton(i),
+        ] else ...[
+          // Show first page
+          _buildPageButton(1),
+          // Show dots or pages
+          if (_currentPage > 3) 
+            Text('...', style: TextStyle(color: accentColor))
+          else
+            for (int i = 2; i <= 3; i++) _buildPageButton(i),
+          
+          // Show current page and surrounding pages
+          if (_currentPage > 3 && _currentPage < _totalPages - 2)
+            for (int i = _currentPage - 1; i <= _currentPage + 1; i++) 
+              _buildPageButton(i),
+          
+          // Show dots or pages
+          if (_currentPage < _totalPages - 2) 
+            Text('...', style: TextStyle(color: accentColor))
+          else
+            for (int i = _totalPages - 2; i < _totalPages; i++) _buildPageButton(i),
+          
+          // Show last page
+          _buildPageButton(_totalPages),
+        ],
         IconButton(
           icon: Icon(Icons.chevron_right, 
             color: _currentPage < _totalPages ? accentColor : Colors.grey),
@@ -203,9 +242,37 @@ class _HomePageState extends State<HomePage> {
                 }
               : null,
         ),
+        const SizedBox(width: 16),
+        // Quick page jump dropdown
+        if (_totalPages > 7) Container(
+          padding: EdgeInsets.symmetric(horizontal: 8),
+          decoration: BoxDecoration(
+            color: accentColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: DropdownButton<int>(
+            value: _currentPage,
+            underline: SizedBox(),
+            style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+            items: List.generate(_totalPages, (index) => index + 1)
+                .map((page) => DropdownMenuItem(
+                      value: page,
+                      child: Text('Go to ${page}'),
+                    ))
+                .toList(),
+            onChanged: (page) {
+              if (page != null) {
+                setState(() {
+                  _currentPage = page;
+                });
+              }
+            },
+          ),
+        ),
       ],
     );
   }
+
 
   void _sendMessage() {
     if (_chatController.text.isNotEmpty) {
