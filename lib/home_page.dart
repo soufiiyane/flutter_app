@@ -66,6 +66,7 @@ class MedicinalPlant {
     );
   }
 }
+
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
@@ -83,6 +84,10 @@ class _HomePageState extends State<HomePage> {
   List<MedicinalPlant> _filteredPlants = [];
   bool _isLoading = true;
   String _error = '';
+  
+  int _currentPage = 1;
+  final int _itemsPerPage = 4;
+  int _totalPages = 1;
 
   final Color primaryColor = const Color(0xFF2D3250);
   final Color accentColor = const Color(0xFF7077A1);
@@ -91,7 +96,6 @@ class _HomePageState extends State<HomePage> {
   List<Map<String, String>> _chatMessages = [
     {"sender": "System", "message": "Hello! I'm your AI assistant. How can I help you today?"}
   ];
-
   @override
   void initState() {
     super.initState();
@@ -109,6 +113,7 @@ class _HomePageState extends State<HomePage> {
         setState(() {
           _plants = items.map((item) => MedicinalPlant.fromJson(item)).toList();
           _filteredPlants = _plants;
+          _totalPages = (_filteredPlants.length / _itemsPerPage).ceil();
           _isLoading = false;
         });
       } else {
@@ -139,7 +144,67 @@ class _HomePageState extends State<HomePage> {
         }
         return false;
       }).toList();
+      _currentPage = 1;
+      _totalPages = (_filteredPlants.length / _itemsPerPage).ceil();
     });
+  }
+
+  List<MedicinalPlant> get _paginatedPlants {
+    final startIndex = (_currentPage - 1) * _itemsPerPage;
+    final endIndex = startIndex + _itemsPerPage;
+    
+    if (startIndex >= _filteredPlants.length) {
+      return [];
+    }
+    
+    if (endIndex > _filteredPlants.length) {
+      return _filteredPlants.sublist(startIndex);
+    }
+    
+    return _filteredPlants.sublist(startIndex, endIndex);
+  }
+
+  Widget _buildPaginationControls() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        IconButton(
+          icon: Icon(Icons.chevron_left, color: _currentPage > 1 ? accentColor : Colors.grey),
+          onPressed: _currentPage > 1
+              ? () {
+                  setState(() {
+                    _currentPage--;
+                  });
+                }
+              : null,
+        ),
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: accentColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            'Page ${_currentPage} of ${_totalPages}',
+            style: TextStyle(
+              color: primaryColor,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        IconButton(
+          icon: Icon(Icons.chevron_right, 
+            color: _currentPage < _totalPages ? accentColor : Colors.grey),
+          onPressed: _currentPage < _totalPages
+              ? () {
+                  setState(() {
+                    _currentPage++;
+                  });
+                }
+              : null,
+        ),
+      ],
+    );
   }
 
   void _sendMessage() {
@@ -165,19 +230,19 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-    backgroundColor: lightColor,
-    appBar: AppBar(
-      title: const Text(
-        "iPlant",
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 24, 
-          color: Colors.white,
+      backgroundColor: lightColor,
+      appBar: AppBar(
+        title: const Text(
+          "iPlant",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 24, 
+            color: Colors.white,
+          ),
         ),
+        backgroundColor: primaryColor,
+        elevation: 0,
       ),
-      backgroundColor: primaryColor,
-      elevation: 0,
-    ),
       body: Stack(
         children: [
           Column(
@@ -234,123 +299,141 @@ class _HomePageState extends State<HomePage> {
                     ? Center(child: CircularProgressIndicator(color: primaryColor))
                     : _error.isNotEmpty
                         ? Center(child: Text(_error))
-                        : Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: GridView.builder(
-                              controller: _scrollController,
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                crossAxisSpacing: 16.0,
-                                mainAxisSpacing: 16.0,
-                                childAspectRatio: 0.75,
-                              ),
-                              itemCount: _filteredPlants.length,
-                              itemBuilder: (context, index) {
-                                final plant = _filteredPlants[index];
-                                return GestureDetector(
-                                 onTap: () async {  // Make this async
-                                  await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => ArticleDetailPage(plant: plant),
+                        : Column(
+                            children: [
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: GridView.builder(
+                                    controller: _scrollController,
+                                    gridDelegate:
+                                        const SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 2,
+                                      crossAxisSpacing: 16.0,
+                                      mainAxisSpacing: 16.0,
+                                      childAspectRatio: 0.75,
                                     ),
-                                  );
-                                  // Refresh data when returning from ArticleDetailPage
-                                  _fetchPlants();
-                                },
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Hero(
-                                          tag: plant.plantId,
-                                          child: ClipRRect(
-                                            borderRadius: const BorderRadius.only(
-                                              topLeft: Radius.circular(12),
-                                              topRight: Radius.circular(12),
+                                    itemCount: _paginatedPlants.length,
+                                    itemBuilder: (context, index) {
+                                      final plant = _paginatedPlants[index];
+                                      return GestureDetector(
+                                        onTap: () async {
+                                          await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  ArticleDetailPage(plant: plant),
                                             ),
-                                            child: Image.network(
-                                              plant.imageUrl,
-                                              width: double.infinity,
-                                              height: 150,
-                                              fit: BoxFit.cover,
-                                            ),
+                                          );
+                                          _fetchPlants();
+                                        },
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius: BorderRadius.circular(12),
                                           ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.all(12.0),
                                           child: Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              Text(
-                                                plant.name,
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: primaryColor,
+                                              Hero(
+                                                tag: plant.plantId,
+                                                child: ClipRRect(
+                                                  borderRadius:
+                                                      const BorderRadius.only(
+                                                    topLeft: Radius.circular(12),
+                                                    topRight: Radius.circular(12),
+                                                  ),
+                                                  child: Image.network(
+                                                    plant.imageUrl,
+                                                    width: double.infinity,
+                                                    height: 150,
+                                                    fit: BoxFit.cover,
+                                                  ),
                                                 ),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
                                               ),
-                                              const SizedBox(height: 8),
-                                              Wrap(
-                                                spacing: 4,
-                                                runSpacing: 4,
-                                                children: plant.tags
-                                                    .take(2)
-                                                    .map((tag) => Container(
-                                                          padding:
-                                                              const EdgeInsets.symmetric(
-                                                            horizontal: 8,
-                                                            vertical: 4,
-                                                          ),
-                                                          decoration: BoxDecoration(
-                                                            color: accentColor
-                                                                .withOpacity(0.1),
-                                                            borderRadius:
-                                                                BorderRadius.circular(8),
-                                                          ),
-                                                          child: Text(
-                                                            tag,
-                                                            style: TextStyle(
-                                                              color: accentColor,
-                                                              fontSize: 12,
-                                                            ),
-                                                          ),
-                                                        ))
-                                                    .toList(),
-                                              ),
-                                              const SizedBox(height: 8),
-                                              Text(
-                                                _getShortDescription(
-                                                    plant.description),
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  color: Colors.grey[700],
+                                              Padding(
+                                                padding: const EdgeInsets.all(12.0),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      plant.name,
+                                                      style: TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight: FontWeight.bold,
+                                                        color: primaryColor,
+                                                      ),
+                                                      maxLines: 1,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                    const SizedBox(height: 8),
+                                                    Wrap(
+                                                      spacing: 4,
+                                                      runSpacing: 4,
+                                                      children: plant.tags
+                                                          .take(2)
+                                                          .map((tag) => Container(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .symmetric(
+                                                                  horizontal: 8,
+                                                                  vertical: 4,
+                                                                ),
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  color: accentColor
+                                                                      .withOpacity(
+                                                                          0.1),
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              8),
+                                                                ),
+                                                                child: Text(
+                                                                  tag,
+                                                                  style:
+                                                                      TextStyle(
+                                                                    color:
+                                                                        accentColor,
+                                                                    fontSize: 12,
+                                                                  ),
+                                                                ),
+                                                              ))
+                                                          .toList(),
+                                                    ),
+                                                    const SizedBox(height: 8),
+                                                    Text(
+                                                      _getShortDescription(
+                                                          plant.description),
+                                                      style: TextStyle(
+                                                        fontSize: 14,
+                                                        color: Colors.grey[700],
+                                                      ),
+                                                      maxLines: 3,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                  ],
                                                 ),
-                                                maxLines: 3,
-                                                overflow: TextOverflow.ellipsis,
                                               ),
                                             ],
                                           ),
                                         ),
-                                      ],
-                                    ),
+                                      );
+                                    },
                                   ),
-                                );
-                              },
-                            ),
+                                ),
+                              ),
+                              _buildPaginationControls(),
+                              SizedBox(height: 16),
+                            ],
                           ),
               ),
             ],
           ),
-          // Chat button and panel
           Positioned(
             bottom: 20,
             right: 20,
@@ -522,9 +605,7 @@ class _HomePageState extends State<HomePage> {
         margin: const EdgeInsets.symmetric(horizontal: 8.0),
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
         decoration: BoxDecoration(
-          color: _selectedSearchType == option
-              ? accentColor
-              : Colors.transparent,
+          color: _selectedSearchType == option ? accentColor : Colors.transparent,
           border: Border.all(color: accentColor, width: 1),
           borderRadius: BorderRadius.circular(12),
         ),
@@ -537,7 +618,7 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-  
+
   @override
   void dispose() {
     _searchController.dispose();
