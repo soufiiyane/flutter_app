@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'home_page.dart';
+import 'session_manager.dart';
 
 class ArticleDetailPage extends StatefulWidget {
   final MedicinalPlant plant;
@@ -32,15 +35,58 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
     }
   }
 
-  void _addComment() {
+  Future<void> _addComment() async {
     if (_commentController.text.isNotEmpty) {
-      setState(() {
-        _localComments.add({
-          'userId': 'Current User',
-          'text': _commentController.text,
-        });
-        _commentController.clear();
-      });
+      final firstName = SessionManager().firstName ?? '';
+      final lastName = SessionManager().lastName ?? '';
+      final userId = SessionManager().userEmail ?? '';
+      
+      // Prepare the comment data
+      final commentData = {
+        "PlantId": widget.plant.plantId,
+        "FirstName": firstName,
+        "LastName": lastName,
+        "Text": _commentController.text,
+        "UserId": userId
+      };
+
+      try {
+        // Make the API call
+        final response = await http.post(
+          Uri.parse('https://ssmb5oqxxa.execute-api.us-east-1.amazonaws.com/dev/comment'),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: json.encode(commentData),
+        );
+
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          // If the server returns a successful response, add the comment to local state
+          setState(() {
+            _localComments.add({
+              'FirstName': firstName,
+              'LastName': lastName,
+              'text': _commentController.text,
+            });
+            _commentController.clear();
+          });
+
+          // Show success message
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Comment added successfully')),
+          );
+        } else {
+          // If the server returns an error response, show error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to add comment')),
+          );
+        }
+      } catch (e) {
+        // If there's an error in the API call, show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: \${e.toString()}')),
+        );
+      }
     }
   }
 
@@ -85,6 +131,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
       )).toList(),
     );
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -153,7 +200,6 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Regions section moved here
                   _buildSectionTitle('Regions', Icons.public),
                   const SizedBox(height: 16),
                   Wrap(
@@ -175,7 +221,6 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
                   ),
                   const SizedBox(height: 24),
                   
-                  // Properties and Uses in Row
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -267,7 +312,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
                   _buildSectionTitle('Comments', Icons.comment),
                   const SizedBox(height: 16),
                   Container(
-                    height: 300, // Fixed height for comments
+                    height: 300,
                     child: SingleChildScrollView(
                       physics: const BouncingScrollPhysics(),
                       child: Column(
@@ -285,7 +330,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
                                     ),
                                     const SizedBox(width: 12),
                                     Text(
-                                      comment['userId'] ?? '',
+                                      (comment['FirstName'] ?? '') + ' ' + (comment['LastName'] ?? ''),
                                       style: const TextStyle(
                                         fontWeight: FontWeight.w600,
                                         fontSize: 16,
@@ -320,7 +365,9 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
                       ),
                       suffixIcon: IconButton(
                         icon: Icon(Icons.send, color: accentColor),
-                        onPressed: _addComment,
+                        onPressed: () async {
+                          await _addComment();
+                        },
                       ),
                     ),
                   ),

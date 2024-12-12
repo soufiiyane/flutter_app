@@ -59,6 +59,8 @@ class MedicinalPlant {
         return {
           'text': commentMap['Text']['S'] as String,
           'userId': commentMap['UserId']['S'] as String,
+          'FirstName': commentMap['FirstName']['S'] as String,
+          'LastName': commentMap['LastName']['S'] as String
         };
       }).toList() ?? [],
     );
