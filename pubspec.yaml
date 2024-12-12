@@ -37,6 +37,7 @@ dependencies:
   http: ^1.2.2 # Add this line
   image_picker: ^0.8.5+3
   image_picker_web: ^4.0.0
+  url_launcher: ^6.1.5  # Add this line or use the latest version
 
 
 dev_dependencies:
