@@ -249,15 +249,16 @@ class _HomePageState extends State<HomePage> {
                               itemBuilder: (context, index) {
                                 final plant = _filteredPlants[index];
                                 return GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            ArticleDetailPage(plant: plant),
-                                      ),
-                                    );
-                                  },
+                                 onTap: () async {  // Make this async
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ArticleDetailPage(plant: plant),
+                                    ),
+                                  );
+                                  // Refresh data when returning from ArticleDetailPage
+                                  _fetchPlants();
+                                },
                                   child: Container(
                                     decoration: BoxDecoration(
                                       color: Colors.white,

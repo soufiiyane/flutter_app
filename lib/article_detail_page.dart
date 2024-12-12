@@ -35,13 +35,32 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
     }
   }
 
+  void _showMessage(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: accentColor,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        duration: const Duration(seconds: 2),
+        margin: EdgeInsets.only(
+          bottom: MediaQuery.of(context).size.height - 100,
+          left: 20,
+          right: 20,
+        ),
+      ),
+    );
+  }
+
   Future<void> _addComment() async {
     if (_commentController.text.isNotEmpty) {
       final firstName = SessionManager().firstName ?? '';
       final lastName = SessionManager().lastName ?? '';
       final userId = SessionManager().userEmail ?? '';
       
-      // Prepare the comment data
       final commentData = {
         "PlantId": widget.plant.plantId,
         "FirstName": firstName,
@@ -51,7 +70,6 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
       };
 
       try {
-        // Make the API call
         final response = await http.post(
           Uri.parse('https://ssmb5oqxxa.execute-api.us-east-1.amazonaws.com/dev/comment'),
           headers: {
@@ -61,7 +79,6 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
         );
 
         if (response.statusCode == 200 || response.statusCode == 201) {
-          // If the server returns a successful response, add the comment to local state
           setState(() {
             _localComments.add({
               'FirstName': firstName,
@@ -71,21 +88,12 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
             _commentController.clear();
           });
 
-          // Show success message
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Comment added successfully')),
-          );
+          _showMessage('Comment added successfully');
         } else {
-          // If the server returns an error response, show error message
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to add comment')),
-          );
+          _showMessage('Failed to add comment');
         }
       } catch (e) {
-        // If there's an error in the API call, show error message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: \${e.toString()}')),
-        );
+        _showMessage('Error: \${e.toString()}');
       }
     }
   }
@@ -250,7 +258,6 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
 
                   const SizedBox(height: 24),
 
-                  // Precautions section
                   _buildSectionTitle('Precautions', Icons.warning_amber),
                   const SizedBox(height: 16),
                   Column(
@@ -275,7 +282,6 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
 
                   const SizedBox(height: 24),
                   
-                  // Articles section
                   _buildSectionTitle('Articles', Icons.library_books),
                   const SizedBox(height: 16),
                   Column(
@@ -308,7 +314,6 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
                   const SizedBox(height: 24),
                   const Divider(height: 32),
                   
-                  // Comments Section
                   _buildSectionTitle('Comments', Icons.comment),
                   const SizedBox(height: 16),
                   Container(
