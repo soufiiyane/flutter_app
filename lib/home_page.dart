@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'article_detail_page.dart';
+import 'login_page.dart';
+import 'session_manager.dart';
 
 class MedicinalPlant {
   final String name;
@@ -30,7 +32,7 @@ class MedicinalPlant {
     required this.comments,
   });
 
-  factory MedicinalPlant.fromJson(Map<String, dynamic> json) {
+ factory MedicinalPlant.fromJson(Map<String, dynamic> json) {
     return MedicinalPlant(
       name: json['Name'] ?? '',
       description: json['Description'] ?? '',
@@ -55,12 +57,22 @@ class MedicinalPlant {
           ?.map((reg) => reg['S'] as String)
           .toList() ?? [],
       comments: (json['Comments'] as List?)?.map((comment) {
-        final Map<String, dynamic> commentMap = comment['M'];
-        return {
-          'text': commentMap['Text']['S'] as String,
-          'userId': commentMap['UserId']['S'] as String,
-          'FirstName': commentMap['FirstName']['S'] as String,
-          'LastName': commentMap['LastName']['S'] as String
+        if (comment['M'] != null) {
+          final commentMap = comment['M'];
+          return <String, String>{  // Explicit type declaration
+            'text': (commentMap['Text']?['S'] ?? '').toString(),
+            'userId': (commentMap['UserId']?['S'] ?? '').toString(),
+            'FirstName': (commentMap['FirstName']?['S'] ?? '').toString(),
+            'LastName': (commentMap['LastName']?['S'] ?? '').toString(),
+            'UserImageUrl': (commentMap['UserImageUrl']?['S'] ?? '').toString()
+          };
+        }
+        return <String, String>{  // Explicit type declaration for empty map
+          'text': '',
+          'userId': '',
+          'FirstName': '',
+          'LastName': '',
+          'UserImageUrl': ''
         };
       }).toList() ?? [],
     );
@@ -309,6 +321,51 @@ class _HomePageState extends State<HomePage> {
         ),
         backgroundColor: primaryColor,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.logout,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Logout'),
+                  content: const Text('Are you sure you want to logout?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(color: accentColor),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        // Clear session
+                        SessionManager().clear();
+                        // Navigate to login page
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const LoginPage(title: 'iPlant'),
+                          ),
+                          (route) => false, // This removes all previous routes
+                        );
+                      },
+                      child: Text(
+                        'Logout',
+                        style: TextStyle(color: primaryColor),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: Stack(
         children: [

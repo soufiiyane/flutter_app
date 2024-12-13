@@ -8,10 +8,13 @@ class SessionManager {
   String? userEmail;
   String? firstName;
   String? lastName;
+  String? profileImageUrl;
 
-  void clearSession() {
+
+ void clear() {
     userEmail = null;
     firstName = null;
     lastName = null;
+    profileImageUrl = null;
   }
 }

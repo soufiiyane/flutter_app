@@ -31,7 +31,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
   Future<void> _launchURL(String urlString) async {
     final Uri url = Uri.parse(urlString);
     if (!await launchUrl(url)) {
-      throw Exception('Could not launch \$urlString');
+      throw Exception('Could not launch $urlString');
     }
   }
 
@@ -55,48 +55,52 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
     );
   }
 
-  Future<void> _addComment() async {
-    if (_commentController.text.isNotEmpty) {
-      final firstName = SessionManager().firstName ?? '';
-      final lastName = SessionManager().lastName ?? '';
-      final userId = SessionManager().userEmail ?? '';
-      
-      final commentData = {
-        "PlantId": widget.plant.plantId,
-        "FirstName": firstName,
-        "LastName": lastName,
-        "Text": _commentController.text,
-        "UserId": userId
-      };
+Future<void> _addComment() async {
+  if (_commentController.text.isNotEmpty) {
+    final firstName = SessionManager().firstName ?? '';
+    final lastName = SessionManager().lastName ?? '';
+    final userId = SessionManager().userEmail ?? '';
+    final userImageUrl = SessionManager().profileImageUrl ?? ''; // Add default empty string
+    
+    final commentData = {
+      "PlantId": widget.plant.plantId,
+      "FirstName": firstName,
+      "LastName": lastName,
+      "Text": _commentController.text,
+      "UserId": userId,
+      "UserImageUrl": userImageUrl,
+    };
 
-      try {
-        final response = await http.post(
-          Uri.parse('https://ssmb5oqxxa.execute-api.us-east-1.amazonaws.com/dev/comment'),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: json.encode(commentData),
-        );
+    try {
+      final response = await http.post(
+        Uri.parse('https://ssmb5oqxxa.execute-api.us-east-1.amazonaws.com/dev/comment'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(commentData),
+      );
 
-        if (response.statusCode == 200 || response.statusCode == 201) {
-          setState(() {
-            _localComments.add({
-              'FirstName': firstName,
-              'LastName': lastName,
-              'text': _commentController.text,
-            });
-            _commentController.clear();
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        setState(() {
+          _localComments.add({
+            'FirstName': firstName,
+            'LastName': lastName,
+            'text': _commentController.text,
+            'UserImageUrl': userImageUrl, // Now it's non-nullable
+            'userId': userId,
           });
+          _commentController.clear();
+        });
 
-          _showMessage('Comment added successfully');
-        } else {
-          _showMessage('Failed to add comment');
-        }
-      } catch (e) {
-        _showMessage('Error: \${e.toString()}');
+        _showMessage('Comment added successfully');
+      } else {
+        _showMessage('Failed to add comment');
       }
+    } catch (e) {
+      _showMessage('Error: \${e.toString()}');
     }
   }
+}
 
   Widget _buildSectionTitle(String title, IconData icon) {
     return Row(
@@ -323,35 +327,47 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
                       child: Column(
                         children: [
                           ..._localComments.map((comment) => Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    CircleAvatar(
-                                      backgroundColor: accentColor.withOpacity(0.1),
-                                      child: Icon(Icons.person, color: accentColor),
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  comment['UserImageUrl'] != null
+                                      ? CircleAvatar(
+                                          radius: 20,
+                                          backgroundImage: NetworkImage(comment['UserImageUrl']!),
+                                        )
+                                      : CircleAvatar(
+                                          radius: 20,
+                                          backgroundColor: accentColor.withOpacity(0.1),
+                                          child: Text(
+                                            '${(comment['FirstName'] ?? '')[0]} ${(comment['LastName'] ?? '')[0]}',
+                                            style: TextStyle(
+                                              color: accentColor,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    '${comment['FirstName'] ?? ''} ${comment['LastName'] ?? ''}',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
                                     ),
-                                    const SizedBox(width: 12),
-                                    Text(
-                                      (comment['FirstName'] ?? '') + ' ' + (comment['LastName'] ?? ''),
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  comment['text'] ?? '',
-                                  style: const TextStyle(fontSize: 16),
-                                ),
-                                const Divider(height: 32),
-                              ],
-                            ),
-                          )),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                comment['text'] ?? '',
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                              const Divider(height: 32),
+                            ],
+                          ),
+                        )),
                         ],
                       ),
                     ),

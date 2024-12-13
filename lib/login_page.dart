@@ -4,6 +4,7 @@ import 'home_page.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'session_manager.dart';
+import 'bottom_navigation.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key, required this.title}) : super(key: key);
@@ -59,18 +60,21 @@ class _LoginPageState extends State<LoginPage> {
         final responseData = jsonDecode(response.body);
 
         if (responseData['statusCode'] == 200) {
-            var body = jsonDecode(responseData['body']);
-            SessionManager().userEmail = email;
-            SessionManager().firstName = body['FirstName'];
-            SessionManager().lastName = body['LastName'];
-            _showMessage('Login successful');
+          var body = jsonDecode(responseData['body']);
+          SessionManager().userEmail = email;
+          SessionManager().firstName = body['FirstName'];
+          SessionManager().lastName = body['LastName'];
+          SessionManager().profileImageUrl = body['ImageUrl'];
+          print(SessionManager().profileImageUrl);
+          _showMessage('Login successful');
 
           if (!mounted) return;
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => HomePage()),
+            MaterialPageRoute(builder: (context) => const BottomNavigation()),
           );
-        } else {
+        }
+        else {
           _showInvalidLoginMessage();
         }
       } else {
