@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'article_detail_page.dart';
 import 'login_page.dart';
 import 'session_manager.dart';
+import 'package:uuid/uuid.dart';
 
 class MedicinalPlant {
   final String name;
@@ -91,11 +92,14 @@ class _HomePageState extends State<HomePage> {
   TextEditingController _searchController = TextEditingController();
   TextEditingController _chatController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final ScrollController _chatScrollController = ScrollController();
   String _selectedSearchType = 'Name';
   List<MedicinalPlant> _plants = [];
   List<MedicinalPlant> _filteredPlants = [];
   bool _isLoading = true;
   String _error = '';
+  String _sessionId = '';
+  bool _isTyping = false;
   
   int _currentPage = 1;
   final int _itemsPerPage = 4;
@@ -108,10 +112,17 @@ class _HomePageState extends State<HomePage> {
   List<Map<String, String>> _chatMessages = [
     {"sender": "System", "message": "Hello! I'm your AI assistant. How can I help you today?"}
   ];
+
   @override
   void initState() {
     super.initState();
+    _generateSessionId();
     _fetchPlants();
+  }
+
+  void _generateSessionId() {
+    final uuid = Uuid();
+    _sessionId = uuid.v4();
   }
 
   Future<void> _fetchPlants() async {
@@ -286,16 +297,68 @@ class _HomePageState extends State<HomePage> {
   }
 
 
-  void _sendMessage() {
-    if (_chatController.text.isNotEmpty) {
+  Future<void> _sendMessage() async {
+    if (_chatController.text.isEmpty) return;
+
+    final userMessage = _chatController.text;
+    _chatController.clear();
+
+    setState(() {
+      _chatMessages.add({"sender": "User", "message": userMessage});
+      _isTyping = true;
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse('https://ssmb5oqxxa.execute-api.us-east-1.amazonaws.com/dev/agent'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'inputText': userMessage,
+          'session_id': _sessionId,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        final bodyData = json.decode(responseData['body']);
+        final messages = bodyData['messages'] as List;
+        
+        setState(() {
+          _chatMessages.add({
+            "sender": "System",
+            "message": messages.first.toString(),
+          });
+          _isTyping = false;
+        });
+      } else {
+        setState(() {
+          _chatMessages.add({
+            "sender": "System",
+            "message": "Sorry, I encountered an error. Please try again.",
+          });
+          _isTyping = false;
+        });
+      }
+    } catch (e) {
       setState(() {
-        _chatMessages.add({"sender": "User", "message": _chatController.text});
         _chatMessages.add({
           "sender": "System",
-          "message": "Thank you for your message. I'll help you shortly."
+          "message": "Sorry, there was an error connecting to the server.",
         });
-        _chatController.clear();
+        _isTyping = false;
       });
+    }
+
+    _scrollToBottom();
+  }
+
+  void _scrollToBottom() {
+    if (_chatScrollController.hasClients) {
+      _chatScrollController.animateTo(
+        _chatScrollController.position.maxScrollExtent + 100,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
     }
   }
 
@@ -634,9 +697,39 @@ class _HomePageState extends State<HomePage> {
                     ),
                     Expanded(
                       child: ListView.builder(
+                        controller: _chatScrollController,
                         padding: const EdgeInsets.all(16.0),
-                        itemCount: _chatMessages.length,
+                        itemCount: _chatMessages.length + (_isTyping ? 1 : 0),
                         itemBuilder: (context, index) {
+                          if (index == _chatMessages.length && _isTyping) {
+                            return Align(
+                              alignment: Alignment.centerLeft,
+                              child: Container(
+                                padding: const EdgeInsets.all(12.0),
+                                margin: const EdgeInsets.only(bottom: 8.0),
+                                decoration: BoxDecoration(
+                                  color: lightColor,
+                                  borderRadius: BorderRadius.circular(12.0),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text('Typing...'),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }
+
                           final message = _chatMessages[index];
                           return Align(
                             alignment: message['sender'] == 'User'
@@ -651,9 +744,7 @@ class _HomePageState extends State<HomePage> {
                                     : lightColor,
                                 borderRadius: BorderRadius.circular(12.0),
                               ),
-                              constraints: BoxConstraints(
-                                maxWidth: 250,
-                              ),
+                              constraints: BoxConstraints(maxWidth: 250),
                               child: Text(
                                 message['message']!,
                                 style: TextStyle(
