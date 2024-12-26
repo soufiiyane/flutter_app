@@ -29,7 +29,7 @@ jobs:
         with:
           projectBaseDir: ./
           args: >
-            -Dsonar.projectKey=my_flutter_app
+            -Dsonar.projectKey=iPlant-Flutter
             -Dsonar.sourceEncoding=UTF-8
             -Dsonar.exclusions=**/*.g.dart,**/*.freezed.dart,**/generated/**
         env:
