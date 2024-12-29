@@ -336,7 +336,9 @@ Future<void> _addComment() async {
                                   comment['UserImageUrl'] != null
                                       ? CircleAvatar(
                                           radius: 20,
-                                          backgroundImage: NetworkImage(comment['UserImageUrl']!),
+                                          backgroundImage: NetworkImage(
+                                            '${comment['UserImageUrl']}?${DateTime.now().millisecondsSinceEpoch}',
+                                          ),
                                         )
                                       : CircleAvatar(
                                           radius: 20,
